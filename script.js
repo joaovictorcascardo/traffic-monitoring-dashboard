@@ -23,13 +23,20 @@ async function initMap() {
 
     map = new Map(document.getElementById("mapa"), {
         center: startPos,
-        zoom: 4,
+        zoom: 17,
         heading: 0,
-        tilt: 0,
+        tilt: 55,
         mapId: "DEMO_MAP_ID",
         renderingType: "VECTOR",
         disableDefaultUI: true,
         gestureHandling: 'greedy'
+    });
+
+    map.addListener("idle", () => {
+        const center = map.getCenter();
+        if (center) {
+            fetchWeather(center.lat(), center.lng());
+        }
     });
 
     trafficLayer = new google.maps.TrafficLayer();
@@ -40,8 +47,6 @@ async function initMap() {
 
     setupControls(AdvancedMarkerElement);
     setupCustomSearch(AdvancedMarkerElement);
-    
-    setTimeout(() => playIntroAnimation(startPos), 1500);
 }
 
 function setupCustomSearch(AdvancedMarkerElement) {
@@ -181,33 +186,6 @@ function showToast(message, type) {
     toast.className = "toast show";
     toast.style.borderLeftColor = type === 'success' ? '#22c55e' : '#ef4444';
     setTimeout(() => toast.classList.remove("show"), 3500);
-}
-
-function teleport(lat, lng, heading) {
-    fetchWeather(lat, lng);
-    map.setZoom(10);
-    setTimeout(() => {
-        map.panTo({ lat: lat, lng: lng });
-        setTimeout(() => {
-            map.setZoom(17);
-            map.setTilt(65);
-            map.setHeading(heading);
-        }, 1000);
-    }, 500);
-}
-
-function playIntroAnimation(targetPos) {
-    showToast("Iniciando satélite...", "info");
-    setTimeout(() => {
-        map.setZoom(10);
-        map.panTo(targetPos);
-        setTimeout(() => {
-            map.setZoom(18);
-            map.setTilt(65);
-            map.setHeading(45);
-            showToast("Bem-vindo a Muriaé", "success");
-        }, 2000);
-    }, 1000);
 }
 
 async function fetchWeather(lat, lng) {
