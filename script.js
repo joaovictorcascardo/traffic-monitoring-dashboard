@@ -120,22 +120,38 @@ function setupControls(AdvancedMarkerElement) {
     document.getElementById("btn-locate").addEventListener("click", () => {
         if (navigator.geolocation) {
             const btn = document.getElementById("btn-locate");
-            btn.querySelector("i").className = "fa-solid fa-circle-notch fa-spin";
+            const icon = btn.querySelector("i");
             
+            icon.className = "fa-solid fa-circle-notch fa-spin";
+            
+            const options = {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            };
+
             navigator.geolocation.getCurrentPosition((position) => {
                 const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
-                map.panTo(pos); map.setZoom(18); map.setTilt(60);
+                
+                map.panTo(pos); 
+                map.setZoom(19);
+                map.setTilt(60); 
                 
                 if (activeMarker) activeMarker.map = null;
+                
                 activeMarker = new AdvancedMarkerElement({
                     map, position: pos,
                     content: buildMarkerIcon("#2563eb", true)
                 });
-                btn.querySelector("i").className = "fa-solid fa-location-crosshairs";
+
+                icon.className = "fa-solid fa-location-crosshairs";
+                showToast("Localização encontrada", "success");
             }, (err) => {
-                showToast("Erro GPS: " + err.message, "error");
-                btn.querySelector("i").className = "fa-solid fa-location-crosshairs";
-            });
+                console.warn("Erro GPS:", err);
+                showToast("Sinal fraco ou permissão negada.", "error");
+                icon.className = "fa-solid fa-location-crosshairs";
+            }, options);
+            showToast("GPS não suportado", "error");
         }
     });
 
