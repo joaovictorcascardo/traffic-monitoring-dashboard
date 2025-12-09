@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lumina Vector Maps // Pro</title>
+    <title>Lumina Vector Maps</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -19,6 +19,21 @@
                 <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
             </circle>
         </svg>
+    </div>
+
+    <div id="weather-widget" class="glass-panel">
+        <div class="weather-icon"><i class="fa-solid fa-cloud-sun" id="w-icon"></i></div>
+        <div class="weather-info">
+            <span id="w-temp" style="font-size: 18px; font-weight: 700;">--°C</span>
+            <span id="w-desc" style="font-size: 12px; color: #64748b; display: block;">Carregando...</span>
+        </div>
+    </div>
+
+    <div class="shortcuts-panel glass-panel">
+        <button class="btn-shortcut" onclick="teleport(-22.9519, -43.2105, 100)" title="Rio de Janeiro">🇧🇷</button>
+        <button class="btn-shortcut" onclick="teleport(40.7580, -73.9855, 0)" title="Nova York">🇺🇸</button>
+        <button class="btn-shortcut" onclick="teleport(35.6586, 139.7454, 190)" title="Tóquio">🇯🇵</button>
+        <button class="btn-shortcut" onclick="teleport(48.8584, 2.2945, 0)" title="Paris">🇫🇷</button>
     </div>
 
     <div class="search-wrapper">
@@ -55,6 +70,11 @@
         <i class="fa-solid fa-circle-info" id="toast-icon"></i>
         <span id="toast-msg">Sistema Online</span>
     </div>
+
+    <a href="https://www.linkedin.com/in/joaovictorpacheco/" target="_blank" class="author-badge glass-panel">
+        <i class="fa-brands fa-linkedin"></i>
+        <span>Dev: João Victor</span>
+    </a>
 
     <div id="mapa"></div>
 

@@ -36,6 +36,8 @@ async function initMap() {
     autocompleteService = new google.maps.places.AutocompleteService();
     placesService = new google.maps.places.PlacesService(map);
 
+    fetchWeather(startPos.lat, startPos.lng);
+
     setupControls(AdvancedMarkerElement);
     setupCustomSearch(AdvancedMarkerElement);
     
@@ -104,6 +106,10 @@ function goToPlace(placeId, AdvancedMarkerElement) {
                 title: place.name
             });
 
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            fetchWeather(lat, lng);
+
             showToast("Destino: " + place.name, "success");
         }
     });
@@ -144,6 +150,7 @@ function setupControls(AdvancedMarkerElement) {
                     content: buildMarkerIcon("#2563eb", true)
                 });
 
+                fetchWeather(pos.lat, pos.lng);
                 icon.className = "fa-solid fa-location-crosshairs";
                 showToast("Localização encontrada", "success");
             }, (err) => {
@@ -177,6 +184,7 @@ function showToast(message, type) {
 }
 
 function teleport(lat, lng, heading) {
+    fetchWeather(lat, lng);
     map.setZoom(10);
     setTimeout(() => {
         map.panTo({ lat: lat, lng: lng });
@@ -200,4 +208,34 @@ function playIntroAnimation(targetPos) {
             showToast("Bem-vindo a Muriaé", "success");
         }, 2000);
     }, 1000);
+}
+
+async function fetchWeather(lat, lng) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
+    
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const weather = data.current_weather;
+        
+        document.getElementById('w-temp').innerText = `${Math.round(weather.temperature)}°C`;
+        
+        const code = weather.weathercode;
+        const { desc, icon } = getWeatherDesc(code);
+        
+        document.getElementById('w-desc').innerText = desc;
+        document.getElementById('w-icon').className = `fa-solid ${icon}`;
+        
+    } catch (error) {
+        console.error("Erro ao carregar clima:", error);
+    }
+}
+
+function getWeatherDesc(code) {
+    if (code === 0) return { desc: "Céu Limpo", icon: "fa-sun" };
+    if (code >= 1 && code <= 3) return { desc: "Parcialmente Nublado", icon: "fa-cloud-sun" };
+    if (code >= 45 && code <= 48) return { desc: "Nevoeiro", icon: "fa-smog" };
+    if (code >= 51 && code <= 67) return { desc: "Chuva Fraca", icon: "fa-cloud-rain" };
+    if (code >= 80 && code <= 99) return { desc: "Chuva/Tempestade", icon: "fa-cloud-showers-heavy" };
+    return { desc: "Nublado", icon: "fa-cloud" };
 }
