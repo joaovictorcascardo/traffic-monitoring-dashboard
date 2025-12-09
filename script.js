@@ -1,0 +1,161 @@
+let map;
+let trafficLayer;
+let activeMarker;
+let autocompleteService;
+let placesService;
+
+const searchInput = document.getElementById('custom-input');
+const searchContainer = document.getElementById('search-container');
+searchInput.addEventListener('focus', () => searchContainer.classList.add('focused'));
+searchInput.addEventListener('blur', () => searchContainer.classList.remove('focused'));
+
+async function initMap() {
+    const { Map } = await google.maps.importLibrary("maps");
+    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+    const { PlacesService, AutocompleteService } = await google.maps.importLibrary("places");
+
+    setTimeout(() => {
+        document.getElementById('loader').style.opacity = '0';
+        setTimeout(() => document.getElementById('loader').remove(), 800);
+    }, 1500);
+
+    const startPos = { lat: -23.5505, lng: -46.6333 };
+
+    map = new Map(document.getElementById("mapa"), {
+        center: startPos,
+        zoom: 17,
+        heading: 0,
+        tilt: 55,
+        mapId: "DEMO_MAP_ID",
+        renderingType: "VECTOR",
+        disableDefaultUI: true,
+        gestureHandling: 'greedy'
+    });
+
+    trafficLayer = new google.maps.TrafficLayer();
+    autocompleteService = new google.maps.places.AutocompleteService();
+    placesService = new google.maps.places.PlacesService(map);
+
+    setupControls(AdvancedMarkerElement);
+    setupCustomSearch(AdvancedMarkerElement);
+    
+    showToast("Lumina Maps UI Pronto", "success");
+}
+
+function setupCustomSearch(AdvancedMarkerElement) {
+    const input = document.getElementById("custom-input");
+    const resultsDiv = document.getElementById("search-results");
+
+    input.addEventListener("input", (e) => {
+        const query = e.target.value;
+        if (!query || query.length < 3) {
+            resultsDiv.style.display = "none"; return;
+        }
+
+        autocompleteService.getPlacePredictions({ input: query }, (predictions, status) => {
+            if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) return;
+            renderResults(predictions, resultsDiv, AdvancedMarkerElement);
+        });
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest(".search-wrapper")) resultsDiv.style.display = "none";
+    });
+}
+
+function renderResults(predictions, resultsDiv, AdvancedMarkerElement) {
+    resultsDiv.innerHTML = "";
+    resultsDiv.style.display = "flex";
+
+    predictions.forEach(place => {
+        const item = document.createElement("div");
+        item.className = "result-item";
+        const mainText = place.structured_formatting.main_text;
+        const subText = place.structured_formatting.secondary_text || "";
+
+        item.innerHTML = `
+            <div class="result-icon-box"><i class="fa-solid fa-location-dot"></i></div>
+            <div class="result-text">
+                <span class="result-main">${mainText}</span>
+                <span class="result-sub">${subText}</span>
+            </div>
+        `;
+        
+        item.addEventListener("click", () => {
+            goToPlace(place.place_id, AdvancedMarkerElement);
+            resultsDiv.style.display = "none";
+            document.getElementById("custom-input").value = mainText;
+        });
+
+        resultsDiv.appendChild(item);
+    });
+}
+
+function goToPlace(placeId, AdvancedMarkerElement) {
+    placesService.getDetails({ placeId: placeId }, (place, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+            if (activeMarker) activeMarker.map = null;
+
+            if (place.geometry.viewport) { map.fitBounds(place.geometry.viewport); } else { map.setCenter(place.geometry.location); map.setZoom(17); }
+
+            activeMarker = new AdvancedMarkerElement({
+                map, position: place.geometry.location,
+                content: buildMarkerIcon("#ef4444", true), 
+                title: place.name
+            });
+
+            showToast("Destino: " + place.name, "success");
+        }
+    });
+}
+
+function setupControls(AdvancedMarkerElement) {
+    let trafficOn = false;
+    document.getElementById("btn-traffic").addEventListener("click", (e) => {
+        trafficOn = !trafficOn;
+        trafficLayer.setMap(trafficOn ? map : null);
+        e.currentTarget.classList.toggle("active", trafficOn);
+    });
+
+    document.getElementById("btn-locate").addEventListener("click", () => {
+        if (navigator.geolocation) {
+            const btn = document.getElementById("btn-locate");
+            btn.querySelector("i").className = "fa-solid fa-circle-notch fa-spin";
+            
+            navigator.geolocation.getCurrentPosition((position) => {
+                const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+                map.panTo(pos); map.setZoom(18); map.setTilt(60);
+                
+                if (activeMarker) activeMarker.map = null;
+                activeMarker = new AdvancedMarkerElement({
+                    map, position: pos,
+                    content: buildMarkerIcon("#2563eb", true)
+                });
+                btn.querySelector("i").className = "fa-solid fa-location-crosshairs";
+            }, (err) => {
+                showToast("Erro GPS: " + err.message, "error");
+                btn.querySelector("i").className = "fa-solid fa-location-crosshairs";
+            });
+        }
+    });
+
+    document.getElementById("btn-tilt-down").addEventListener("click", () => map.setTilt(Math.min((map.getTilt()||0)+20, 67.5)));
+    document.getElementById("btn-tilt-up").addEventListener("click", () => map.setTilt(Math.max((map.getTilt()||0)-20, 0)));
+    document.getElementById("btn-rotate").addEventListener("click", () => map.setHeading((map.getHeading()||0)+45));
+}
+
+function buildMarkerIcon(color, withPulse = false) {
+    const container = document.createElement('div');
+    container.className = `marker-container ${withPulse ? 'marker-pulse' : ''}`;
+    container.style.color = color;
+    container.innerHTML = `<i class="fa-solid fa-location-dot marker-icon marker-pop"></i>`;
+    return container;
+}
+
+function showToast(message, type) {
+    const toast = document.getElementById("toast");
+    document.getElementById("toast-msg").innerText = message;
+    toast.className = "toast show";
+    toast.style.borderLeftColor = type === 'success' ? '#22c55e' : '#ef4444';
+    setTimeout(() => toast.classList.remove("show"), 3500);
+}

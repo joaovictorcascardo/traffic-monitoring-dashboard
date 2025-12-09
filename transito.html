@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lumina Vector Maps // Pro</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="loader-overlay" id="loader">
+        <svg width="50" height="50" viewBox="0 0 50 50">
+            <circle cx="25" cy="25" r="20" fill="none" stroke="rgba(37, 99, 235, 0.2)" stroke-width="4"/>
+            <circle cx="25" cy="25" r="20" fill="none" stroke="#2563eb" stroke-width="4" stroke-dasharray="80" stroke-dashoffset="60">
+                <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite"/>
+            </circle>
+        </svg>
+    </div>
+
+    <div class="search-wrapper">
+        <div class="search-bar-container glass-panel" id="search-container">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="custom-input" class="search-input" placeholder="Pesquisar local...">
+        </div>
+        <div id="search-results" class="glass-panel"></div>
+    </div>
+
+    <div class="controls-dock glass-panel">
+        <button class="btn-glass" id="btn-traffic" title="Trânsito">
+            <i class="fa-solid fa-car-side"></i>
+        </button>
+        
+        <button class="btn-glass" id="btn-locate" title="Minha Localização" style="color:#2563eb">
+            <i class="fa-solid fa-location-crosshairs"></i>
+        </button>
+
+        <div class="divider"></div>
+
+        <button class="btn-glass" id="btn-tilt-down" title="Inclinar Mais">
+            <i class="fa-solid fa-arrow-down-long" style="transform: rotateX(45deg);"></i>
+        </button>
+        <button class="btn-glass" id="btn-tilt-up" title="Inclinar Menos">
+            <i class="fa-solid fa-arrow-up-long" style="transform: rotateX(45deg);"></i>
+        </button>
+         <button class="btn-glass" id="btn-rotate" title="Girar">
+            <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+    </div>
+
+    <div class="toast" id="toast">
+        <i class="fa-solid fa-circle-info" id="toast-icon"></i>
+        <span id="toast-msg">Sistema Online</span>
+    </div>
+
+    <div id="mapa"></div>
+
+    <script src="script.js"></script>
+    
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBCb9XYn8XmEvXyfZHo4gnZm6XnBaGh_ks&callback=initMap&libraries=places,marker&v=weekly"></script>
+
+</body>
+</html>
